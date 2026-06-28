@@ -1,6 +1,7 @@
-# CLAUDE.md — project handoff
+# AGENTS.md — project handoff
 
-Context for an AI coding agent resuming work on this repo. This file is about
+Context for any AI coding agent resuming work on this repo (Claude Code, Codex,
+or otherwise — `AGENTS.md` is the cross-tool standard). This file is about
 *developing the repo*, not about using the format (that's `SKILL.md`).
 
 ## What this project is
@@ -25,7 +26,7 @@ plainspace/
 ├── README.md        # GitHub front page: what/why, attribution + source links, quickstart, adapt, license
 ├── SKILL.md         # THE SPEC. The format + the protocol an agent follows. Self-demonstrating (dense).
 ├── BOOTSTRAP.md     # Paste-into-system-prompt snippet so any agent can read/write a workspace
-├── CLAUDE.md        # This handoff
+├── AGENTS.md        # This handoff (dev context, agent-neutral name)
 ├── LICENSE          # MIT © 2026 Dorunaitsu
 └── examples/sample-workspace/   # Complete generic worked example (collect -> draft pipeline + knowledge base)
     ├── index.md  log.md
@@ -47,11 +48,13 @@ plainspace/
 3. **Naming.** "AWF" was rejected — already taken in the agent space (GitHub's
    Agent Workflow Firewall, awf-project/cli, an Antigravity framework). Do not
    reintroduce it. Renamed to **Plainspace** (plain text + workspace).
-4. **BOOTSTRAP.md is not AGENTS.md on purpose.** `AGENTS.md` is now an
-   established standard (Linux Foundation) for telling a coding agent how to
-   behave *in a repo*. Our consumer-agent bootstrap is therefore named
-   `BOOTSTRAP.md` to avoid the collision. (This handoff could be renamed to
-   `AGENTS.md` if cross-tool standardization is wanted.)
+4. **Agent-neutral naming, no gatekeeping.** The format is for *any* agent and
+   *any* inference provider (Claude, Codex, Hermes, OpenClaw, open-weight, …) — do
+   not phrase docs as if Claude were required. Two naming consequences:
+   `AGENTS.md` (Linux Foundation standard for telling a coding agent how to
+   behave *in a repo*) is this dev handoff; the *consumer-agent* bootstrap is
+   named `BOOTSTRAP.md` to avoid colliding with it. Name specific agents only as
+   examples, never as requirements.
 5. **Examples stay generic.** An earlier draft was personalized (a user's server
    stack, suppliers). It was deliberately replaced with neutral content. Keep
    examples domain-neutral — no personal/real data.
@@ -70,9 +73,9 @@ plainspace/
 ## Status & next steps
 
 - [x] Spec, bootstrap, generic example, README, license — done.
-- [ ] **Publish:** create public GitHub repo `plainspace` and push (owner action;
-      `git init -b main && git add . && git commit -m "Plainspace v0.1" &&
-      gh repo create plainspace --public --source=. --remote=origin --push`).
+- [x] Local git repo initialized and committed (`Plainspace v0.1`).
+- [ ] **Publish:** create the GitHub repo and push (owner action;
+      `gh repo create plainspace --public --source=. --remote=origin --push`).
 - [ ] Optional backlog: a tiny no-dependency conformance checker script;
       a second example (e.g. a research-to-brief pipeline); `CONTRIBUTING.md`;
       a one-line spec-version bump policy.
