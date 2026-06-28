@@ -49,9 +49,9 @@ plainspace/
 
 ## Use it with your agent
 
-Plainspace is conventions, not code, so it works with any agent that can read files — Claude, GPT, an open-weight model, an n8n/LangChain pipeline, whatever.
+Plainspace is conventions, not code. It's deliberately **agent- and provider-agnostic** — it works with any agent on any inference backend that can read files: Claude, Codex, Hermes, OpenClaw, GPT, open-weight models, an n8n/LangChain pipeline, whatever. Nothing here assumes a specific model or vendor.
 
-- **In a skill-aware system** (e.g. Claude): drop `SKILL.md` in as a skill. It triggers on knowledge/workflow tasks.
+- **In a skill-aware system** (e.g. Claude Code, or any agent that loads skill files): drop `SKILL.md` in as a skill. It triggers on knowledge/workflow tasks.
 - **Anywhere else**: paste the contents of [`BOOTSTRAP.md`](BOOTSTRAP.md) into your agent's system prompt and point it at the workspace folder.
 
 ## Adapt it to your structure
