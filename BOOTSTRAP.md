@@ -34,6 +34,16 @@ steps). Follow this protocol.
 5. Set `updated`, append a line to `log.md` if present, and update `index.md` so
    the file is discoverable.
 
+**Memory (only if the workspace has `inbox/` / `archive/` — the MEMORY profile)**
+1. To remember something mid-task: write one file to `inbox/<date>-<slug>.md`
+   (`type: Capture`, `source`), one fact per line. No index update, no formatting.
+2. Before trusting a fact, check its `status`: skip `superseded`/`archived`.
+   Never search `archive/` unless auditing.
+3. Recall ladder: `index.md` maps → grep or `tools/psindex.py search "query"` →
+   semantic index if present. Climb only when the rung below fails.
+4. Consolidation (promote inbox → knowledge, archive stale) runs as the `90_*`
+   stage per its own contract — do not consolidate ad hoc.
+
 **The one rule behind all of this:** the expensive thing is loading context you
 don't need, not verbose prose. Load less first. Compress prose last, and never
 into a cipher.
