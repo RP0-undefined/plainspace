@@ -61,6 +61,20 @@ schema in its docs before writing — schemas change.
 
 ---
 
+## 3. Schedule consolidation (the memory's heartbeat)
+
+Consolidation only exists if something triggers it. Pick ONE, with the human's approval:
+
+| your situation                     | action |
+|------------------------------------|--------|
+| harness has scheduled/cron agents  | schedule a daily/weekly run: "Run `90_consolidate/_stage.md` per its contract" |
+| OS scheduler available (cron, Task Scheduler) | e.g. `0 7 * * * cd /path/to/workspace && <agent-cli> -p "Run 90_consolidate/_stage.md per its contract"` |
+| neither                            | fallback rule, add to your always-loaded instructions: "At session start, if `inbox/` has ≥ 10 files or its oldest capture is > 7 days old, run the consolidation stage before other work." |
+
+The fallback is weaker (advisory, like all instructions) — prefer a real scheduler.
+
+---
+
 # Notes
 
 Why one-time and separate: setup instructions loaded on every skill trigger

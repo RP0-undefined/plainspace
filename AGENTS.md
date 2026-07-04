@@ -98,4 +98,7 @@ plainspace/
       `CONTRIBUTING.md`; a one-line spec-version bump policy; rung-3 semantic
       recall reference implementation (embeddings behind the same search verbs);
       propose Plainspace as an optional skill to NousResearch/hermes-agent
-      (issue-first — draft written, owner action).
+      (issue-first — draft written, owner action);
+      per-fact scoring with decay — a memory whose score drops below a threshold
+      enters an audit queue for the consolidation stage (owner-approved
+      direction, not designed yet).

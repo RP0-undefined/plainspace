@@ -67,7 +67,18 @@ Lives at `90_consolidate/_stage.md`. Run on cadence (daily/weekly) or when `inbo
 - **Supersede**: on contradiction, newer wins unless its `confidence` is lower. Loser moves to `archive/` with `status: superseded` + `superseded_by`. Move history, never rewrite it.
 - **Escalate**: ambiguous conflict → leave in `inbox/`, flag in `log.md` for a human.
 - **Demote**: knowledge unreferenced and `last_verified` > 180 days → `archive/` with `status: archived`.
-- **Reindex**: regenerate maps (rung 1); rebuild `memory.db` if used. Append run summary to `log.md`.
+- **Reindex**: regenerate maps (rung 1); rebuild `memory.db` if used. Append a run summary
+  to `log.md` with counters: promoted / superseded / archived / left-ambiguous
+  (`tools/psindex.py stats` prints hygiene counters to include).
+
+**Audit trail (if the workspace is a git repo):** commit locally before the run
+(`memory: pre-consolidate`) and after (`memory: consolidate <date> — <counters>`).
+The diff between the two commits is the review gate — a human audits or reverts a bad
+consolidation. Local commits only; no remote or push required.
+
+**Boundary — one writer.** One workspace = one writing agent at a time. This profile has
+no locking; concurrent writers corrupt consolidation. Multiple agents need either separate
+workspaces, or all writes serialized through the one agent that runs consolidation.
 
 Profile extension to core §6: **maintenance stages (numbered 90+) MAY write across the
 workspace** instead of only `output/`. Numbering convention: 90+ = recurring maintenance.

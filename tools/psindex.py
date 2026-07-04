@@ -8,11 +8,13 @@ Usage:
   psindex.py build  [workspace]                  rebuild memory.db
   psindex.py search "query" [--dir WS] [--all]   search (archive excluded unless --all)
   psindex.py map    [workspace] [--force]        regenerate per-directory index.md maps
+  psindex.py stats  [workspace]                  memory hygiene counters
 """
 
 import re
 import sqlite3
 import sys
+from datetime import date
 from pathlib import Path
 
 DB_NAME = "memory.db"
@@ -164,6 +166,49 @@ def build_maps(root, force=False):
         print(f"wrote {target.relative_to(root)}")
 
 
+def stats(root):
+    today = date.today()
+
+    def days_ago(value):
+        try:
+            return (today - date.fromisoformat(str(value)[:10])).days
+        except (ValueError, TypeError):
+            return None
+
+    rows = []
+    for p, rel in iter_concepts(root):
+        meta, _ = parse_frontmatter(p.read_text(errors="replace"))
+        rows.append((rel, meta))
+    if not rows:
+        sys.exit("no concepts found")
+
+    by_top, by_status = {}, {}
+    for rel, meta in rows:
+        top = rel.parts[0] if len(rel.parts) > 1 else "(root)"
+        by_top[top] = by_top.get(top, 0) + 1
+        st = meta.get("status") or "current"
+        by_status[st] = by_status.get(st, 0) + 1
+
+    inbox = [(rel, m) for rel, m in rows if rel.parts[0] == "inbox"]
+    know = [(rel, m) for rel, m in rows if rel.parts[0] == "knowledge"]
+    stale = [rel for rel, m in know
+             if (days_ago(m.get("last_verified")) or 10**6) > 180]
+
+    print(f"concepts: {len(rows)} ("
+          + ", ".join(f"{k} {v}" for k, v in sorted(by_top.items())) + ")")
+    print("status: " + ", ".join(f"{k} {v}" for k, v in sorted(by_status.items())))
+    if inbox:
+        ages = [days_ago(m.get("updated")) for _, m in inbox]
+        oldest = max((a for a in ages if a is not None), default=None)
+        note = " <- CONSOLIDATE" if len(inbox) >= 10 or (oldest or 0) > 7 else ""
+        print(f"inbox backlog: {len(inbox)} capture(s), oldest "
+              f"{oldest if oldest is not None else '?'}d{note}")
+    else:
+        print("inbox backlog: 0")
+    print(f"knowledge unverified >180d: {len(stale)}"
+          + (" -> " + ", ".join(str(r) for r in stale[:5]) if stale else ""))
+
+
 def main():
     args = sys.argv[1:]
     if not args or args[0] in ("-h", "--help"):
@@ -187,6 +232,8 @@ def main():
         search(Path(wsdir or ".").resolve(), " ".join(pos), show_all="--all" in flags)
     elif cmd == "map":
         build_maps(Path(pos[0] if pos else ".").resolve(), force="--force" in flags)
+    elif cmd == "stats":
+        stats(Path(pos[0] if pos else ".").resolve())
     else:
         sys.exit(f"unknown command: {cmd}\n{__doc__}")
 
