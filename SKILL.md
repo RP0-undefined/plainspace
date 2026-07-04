@@ -204,3 +204,11 @@ When reading any workspace:
 ## 10. Example
 
 A minimal worked workspace is in `examples/sample-workspace/` — two knowledge concepts (one `audience: agent`, one `both`), two stages with frontmatter contracts, an `index.md`, and a `log.md`. Read `examples/sample-workspace/index.md` first, as the protocol prescribes.
+
+---
+
+## 11. Profiles
+
+Optional extensions layered on this core; core rules remain law. One exists today:
+
+- **Memory** (`MEMORY.md`) — long-term agent memory: cheap capture (`inbox/`), a recurring consolidation stage (90+), supersession fields, `archive/` forgetting, and a 3-rung recall ladder (maps → grep/FTS → semantic) so agent behavior survives scale. Worked example: `examples/memory-workspace/`.

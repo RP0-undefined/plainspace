@@ -25,14 +25,22 @@ save consumer-agent tokens).
 plainspace/
 ├── README.md        # GitHub front page: what/why, attribution + source links, quickstart, adapt, license
 ├── SKILL.md         # THE SPEC. The format + the protocol an agent follows. Self-demonstrating (dense).
+├── MEMORY.md        # PROFILE: long-term memory (capture→consolidate→recall→forget). Optional, layered on core.
 ├── BOOTSTRAP.md     # Paste-into-system-prompt snippet so any agent can read/write a workspace
 ├── AGENTS.md        # This handoff (dev context, agent-neutral name)
 ├── LICENSE          # MIT © 2026 Dorunaitsu
-└── examples/sample-workspace/   # Complete generic worked example (collect -> draft pipeline + knowledge base)
-    ├── index.md  log.md
-    ├── knowledge/{style-guide.md (audience: both), glossary.md (audience: agent)}
-    ├── 01_collect/{_stage.md, output/.gitkeep}
-    └── 02_draft/{_stage.md, output/.gitkeep}
+├── tools/psindex.py # Optional derived index: SQLite+FTS5, stdlib only (build / search / map)
+└── examples/
+    ├── sample-workspace/   # Complete generic worked example (collect -> draft pipeline + knowledge base)
+    │   ├── index.md  log.md
+    │   ├── knowledge/{style-guide.md (audience: both), glossary.md (audience: agent)}
+    │   ├── 01_collect/{_stage.md, output/.gitkeep}
+    │   └── 02_draft/{_stage.md, output/.gitkeep}
+    └── memory-workspace/   # Worked example of the Memory profile
+        ├── index.md ("# Core" always-loaded block)  log.md
+        ├── inbox/ (cheap capture)  knowledge/ (status/source/confidence/supersedes)
+        ├── archive/ (superseded — excluded from recall)
+        └── 90_consolidate/_stage.md (recurring maintenance stage)
 ```
 
 ## Design decisions — do not silently undo these
@@ -60,6 +68,15 @@ plainspace/
    examples domain-neutral — no personal/real data.
 6. **License: MIT, holder "Dorunaitsu".** Briefly trialed The Unlicense
    (public domain) then reverted to MIT by request.
+7. **Memory profile laws (MEMORY.md).** (a) Files are the truth; every index
+   (`memory.db`, generated `index.md` maps) is derived and disposable — if they
+   disagree, files win. (b) Recall is a fixed 3-rung ladder (maps → grep/FTS →
+   semantic); the protocol never changes, only the substrate under it. (c) Capture
+   must be zero-ceremony (`inbox/`, no index update) or agents stop saving.
+   (d) Forgetting = move to `archive/` + `status`, never delete — recall excludes
+   archive by default. (e) Maintenance stages (90+) may write across the
+   workspace, unlike regular stages. (f) `tools/psindex.py` stays stdlib-only and
+   optional — the profile must work with zero tooling at small scale.
 
 ## Editing conventions
 
@@ -74,8 +91,10 @@ plainspace/
 
 - [x] Spec, bootstrap, generic example, README, license — done.
 - [x] Local git repo initialized and committed (`Plainspace v0.1`).
-- [ ] **Publish:** create the GitHub repo and push (owner action;
-      `gh repo create plainspace --public --source=. --remote=origin --push`).
+- [x] **Published:** https://github.com/RP0-undefined/plainspace (public, `main`).
+- [x] **Memory profile** (`MEMORY.md`) + `tools/psindex.py` + `examples/memory-workspace/`.
 - [ ] Optional backlog: a tiny no-dependency conformance checker script;
-      a second example (e.g. a research-to-brief pipeline); `CONTRIBUTING.md`;
-      a one-line spec-version bump policy.
+      `CONTRIBUTING.md`; a one-line spec-version bump policy; rung-3 semantic
+      recall reference implementation (embeddings behind the same search verbs);
+      propose Plainspace as an optional skill to NousResearch/hermes-agent
+      (issue-first — draft written, owner action).

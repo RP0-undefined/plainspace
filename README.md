@@ -23,22 +23,31 @@ But note the trap Plainspace is built to avoid: **the biggest token cost is load
 ```
 plainspace/
 ├── SKILL.md                       # The format spec + the protocol an agent follows.
+├── MEMORY.md                      # Optional profile: long-term memory (capture→consolidate→recall→forget).
 ├── BOOTSTRAP.md                   # Drop-in bootstrap to point any agent at a workspace.
 ├── LICENSE                        # MIT.
 ├── README.md
+├── tools/
+│   └── psindex.py                 # Optional derived index (SQLite FTS), stdlib only.
 └── examples/
-    └── sample-workspace/          # A complete, generic worked example.
-        ├── index.md               #   the map — read first
-        ├── log.md
-        ├── knowledge/             #   concepts (durable knowledge / "factory")
-        │   ├── style-guide.md     #     audience: both
-        │   └── glossary.md        #     audience: agent
-        ├── 01_collect/            #   a pipeline stage
-        │   ├── _stage.md          #     contract: inputs / process / outputs
-        │   └── output/            #     per-run artifacts ("product")
-        └── 02_draft/
-            ├── _stage.md
-            └── output/
+    ├── sample-workspace/          # A complete, generic worked example.
+    │   ├── index.md               #   the map — read first
+    │   ├── log.md
+    │   ├── knowledge/             #   concepts (durable knowledge / "factory")
+    │   │   ├── style-guide.md     #     audience: both
+    │   │   └── glossary.md        #     audience: agent
+    │   ├── 01_collect/            #   a pipeline stage
+    │   │   ├── _stage.md          #     contract: inputs / process / outputs
+    │   │   └── output/            #     per-run artifacts ("product")
+    │   └── 02_draft/
+    │       ├── _stage.md
+    │       └── output/
+    └── memory-workspace/          # Worked example of the Memory profile.
+        ├── index.md               #   map + "# Core" always-loaded block
+        ├── inbox/                 #   cheap captures
+        ├── knowledge/             #   consolidated facts (status/source/confidence)
+        ├── archive/               #   superseded facts — excluded from recall
+        └── 90_consolidate/        #   recurring maintenance stage
 ```
 
 ## Quickstart
@@ -46,6 +55,10 @@ plainspace/
 1. Read [`SKILL.md`](SKILL.md) — it's the whole spec, ~1 page, and it practices what it preaches.
 2. Open [`examples/sample-workspace/index.md`](examples/sample-workspace/index.md) and follow the links. That's exactly how an agent traverses it.
 3. Copy `examples/sample-workspace/` somewhere and start editing. Replace the example concepts and stages with your own.
+
+## Long-term memory (optional profile)
+
+[`MEMORY.md`](MEMORY.md) turns a workspace into an agent's long-term memory by adding the missing lifecycle: **capture** (zero-ceremony `inbox/`) → **consolidate** (a recurring stage promotes captures into `knowledge/`, supersedes contradictions) → **recall** (a 3-rung ladder: maps → grep/FTS via [`tools/psindex.py`](tools/psindex.py) → semantic) → **forget** (`archive/`, excluded from recall). Files stay the source of truth — every index is derived and disposable. Behavior is identical at 10 files and at 50,000; only the substrate under the ladder changes. See [`examples/memory-workspace/`](examples/memory-workspace/).
 
 ## Use it with your agent
 
