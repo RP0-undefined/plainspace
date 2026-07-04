@@ -97,7 +97,15 @@ Protocol is fixed; the substrate scales underneath it. Climb one rung only when 
 
 ---
 
-## 7. Reading protocol (agent)
+## 7. First adoption
+
+On first use of a workspace, read `SETUP.md` once (if present): it lets you make
+the capture checkpoint deterministic by configuring your own harness — with the
+human's approval. Never reload it afterwards.
+
+---
+
+## 8. Reading protocol (agent)
 
 1. Read `index.md`. Load the `# Core` block if present (it is the always-in-context memory).
 2. Resolve the target from maps (rung 1); else search (rung 2). Open ONE file. Stop.

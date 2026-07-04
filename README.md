@@ -24,6 +24,7 @@ But note the trap Plainspace is built to avoid: **the biggest token cost is load
 plainspace/
 ├── SKILL.md                       # The format spec + the protocol an agent follows.
 ├── MEMORY.md                      # Optional profile: long-term memory (capture→consolidate→recall→forget).
+├── SETUP.md                       # One-time, agent-executable setup (optional harness hooks). Ask-first.
 ├── BOOTSTRAP.md                   # Drop-in bootstrap to point any agent at a workspace.
 ├── LICENSE                        # MIT.
 ├── README.md

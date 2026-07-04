@@ -26,6 +26,7 @@ plainspace/
 ├── README.md        # GitHub front page: what/why, attribution + source links, quickstart, adapt, license
 ├── SKILL.md         # THE SPEC. The format + the protocol an agent follows. Self-demonstrating (dense).
 ├── MEMORY.md        # PROFILE: long-term memory (capture→consolidate→recall→forget). Optional, layered on core.
+├── SETUP.md         # One-time agent-executable setup: self-configure harness hooks (ask-first, never hot-path)
 ├── BOOTSTRAP.md     # Paste-into-system-prompt snippet so any agent can read/write a workspace
 ├── AGENTS.md        # This handoff (dev context, agent-neutral name)
 ├── LICENSE          # MIT © 2026 Dorunaitsu
