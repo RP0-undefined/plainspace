@@ -61,6 +61,8 @@ plainspace/
 
 [`MEMORY.md`](MEMORY.md) turns a workspace into an agent's long-term memory by adding the missing lifecycle: **capture** (zero-ceremony `inbox/`) → **consolidate** (a recurring stage promotes captures into `knowledge/`, supersedes contradictions) → **recall** (a 3-rung ladder: maps → grep/FTS via [`tools/psindex.py`](tools/psindex.py) → semantic) → **forget** (`archive/`, excluded from recall). Files stay the source of truth — every index is derived and disposable. Behavior is identical at 10 files and at 50,000; only the substrate under the ladder changes. See [`examples/memory-workspace/`](examples/memory-workspace/).
 
+The "no required tooling" promise holds: rung 1 (maps + grep) needs nothing, and everything else — the index script, a scheduler for consolidation, the git audit trail, harness hooks ([`SETUP.md`](SETUP.md)) — is an opt-in accelerator. Skip them all and the workspace still works; you only lose determinism, never data.
+
 ## Use it with your agent
 
 Plainspace is conventions, not code. It's deliberately **agent- and provider-agnostic** — it works with any agent on any inference backend that can read files: Claude, Codex, Hermes, OpenClaw, GPT, open-weight models, an n8n/LangChain pipeline, whatever. Nothing here assumes a specific model or vendor.
