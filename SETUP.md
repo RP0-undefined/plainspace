@@ -68,6 +68,7 @@ Consolidation only exists if something triggers it. Pick ONE, with the human's a
 | your situation                     | action |
 |------------------------------------|--------|
 | harness has scheduled/cron agents  | schedule a daily/weekly run: "Run `90_consolidate/_stage.md` per its contract" |
+| harness supports subagents         | delegate the consolidation run to a dedicated subagent — its `_stage.md` is the complete prompt. Do NOT delegate capture or targeted recall: they belong to the calling agent (delegation there adds cost, no benefit) |
 | OS scheduler available (cron, Task Scheduler) | e.g. `0 7 * * * cd /path/to/workspace && <agent-cli> -p "Run 90_consolidate/_stage.md per its contract"` |
 | neither                            | fallback rule, add to your always-loaded instructions: "At session start, if `inbox/` has ≥ 10 files or its oldest capture is > 7 days old, run the consolidation stage before other work." |
 
