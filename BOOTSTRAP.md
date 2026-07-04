@@ -37,6 +37,9 @@ steps). Follow this protocol.
 **Memory (only if the workspace has `inbox/` / `archive/` — the MEMORY profile)**
 1. To remember something mid-task: write one file to `inbox/<date>-<slug>.md`
    (`type: Capture`, `source`), one fact per line. No index update, no formatting.
+   End-of-task checkpoint: before finishing ANY task, if you learned a durable
+   fact (decision, constraint, preference, outcome), capture it — do not wait
+   to be asked. An unwritten fact is a fact forgotten.
 2. Before trusting a fact, check its `status`: skip `superseded`/`archived`.
    Never search `archive/` unless auditing.
 3. Recall ladder: `index.md` maps → grep or `tools/psindex.py search "query"` →

@@ -9,7 +9,10 @@ description: >
   corpus it can traverse cheaply; or write/edit any .md it will itself read later.
   Use it even when the user only says "remember this", "save it for later",
   "set up a workflow", "make a knowledge base", or "note that down" — this format
-  still applies. Prefer it over free-form note files.
+  still applies. Prefer it over free-form note files. Also invoke it PROACTIVELY,
+  without being asked: before finishing any task in which you learned a durable
+  fact (a decision, constraint, preference, or outcome), capture it to the
+  workspace — an unwritten fact is a fact forgotten.
 ---
 
 # Plainspace v0.1
