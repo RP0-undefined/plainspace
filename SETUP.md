@@ -14,6 +14,9 @@ updated: 2026-07-04T00:00:00Z
 You (the agent) execute this yourself when you first operate over a Plainspace
 workspace. Everything here is optional — the workspace works with zero setup.
 
+Tiers (do in order of need): **§1 checkpoint** = L1, set it up first · **§2 tooling / §3
+scheduling** = L2, add when the workspace grows.
+
 **Rules:**
 - ASK the human before modifying any harness or system config. Show the exact change first.
 - Apply the step for YOUR harness only. Skip the rest.
@@ -75,6 +78,10 @@ Consolidation only exists if something triggers it. Pick ONE, with the human's a
 
 Thresholds are declared on the stage (`triggers:` frontmatter) and read by `psindex.py stats`
 — don't hardcode 10/7 in the hook. The fallback is weaker (advisory) — prefer a real scheduler.
+
+Optional, if your harness exposes context-window usage: trigger the stage-state offload
+pattern (`PATTERNS.md` §1) at ~50% window and force it by ~85%. This is harness business,
+not part of the spec.
 
 ---
 

@@ -1,0 +1,31 @@
+# Changelog
+
+Versioning: the spec version lives in the `SKILL.md` title. **Additive** change (new
+optional field, profile, tool subcommand) → minor bump. **Breaking** change (a conformant
+workspace stops being conformant, or a documented default changes meaning) → major bump.
+
+## v0.2 — 2026-07-06
+
+Memory profile hardening (see `MEMORY.md`), no breaking changes to the core spec.
+
+- **Traceability**: consolidated captures are archived to `archive/inbox/` with
+  `promoted_to` (never deleted); promoted knowledge carries `derived_from`. Unbroken
+  L3→L0 drill-down by frontmatter alone.
+- **Named layer pyramid** (L0→L3) documented; `# Core` block gains a lifecycle
+  (consolidation-regenerated, per-line links, ≤15-line budget).
+- **Smarter consolidation**: warmup schedule + thresholds declared as stage frontmatter
+  (`triggers:`); session-end trigger option in `SETUP.md`.
+- **Recall budgets**: ≤5 candidates, open one, degrade gracefully; `psindex search` gains
+  `--limit` (default 5) and `--since`.
+- **Dedup** step at consolidation; scoring-with-decay design note in `design/`.
+- **Tooling**: `psindex.py` rewritten (argparse; partial map regeneration preserving the
+  `# Core` block; staleness auto-rebuild; body-aware LIKE fallback; `stats` provenance
+  counter; new `check` conformance subcommand). Stdlib `unittest` suite + GitHub Actions CI.
+- **Benchmark** (`bench/`) quantifying the load-less claim.
+- Link style flipped to plain-relative (leading-`/` still tolerated on read).
+
+## v0.1 — 2026-06-28
+
+Initial release: core spec (`SKILL.md`), `BOOTSTRAP.md`, MIT license, generic worked
+example. Later in the series: the Memory profile (`MEMORY.md`), `tools/psindex.py`,
+`SETUP.md`, and the memory worked example.

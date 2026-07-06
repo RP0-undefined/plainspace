@@ -18,6 +18,16 @@ Most "agent-readable" markdown is really written for humans: narration, transiti
 
 But note the trap Plainspace is built to avoid: **the biggest token cost is loading what you don't need, not verbosity.** So the format's first rule is *load less* (read the map, open one file), and it explicitly forbids compressing prose into a cipher — LLMs decompress invented shorthand at the cost of reasoning and accuracy. Density here means *cutting narration*, not *cutting language*.
 
+How much does *load less* actually save? A reproducible benchmark ([`bench/`](bench/)) answers the same 40 questions three ways over the same corpus (tokens ≈ chars/4):
+
+| strategy | avg tokens/query | accuracy |
+|----------|------------------|----------|
+| naive tree-crawl | 1876 | 100% |
+| index-first (read the map, open one file) | 644 | 100% |
+| rung-2 FTS (`psindex search`) | 73 | 100% |
+
+Same answers, ~26× fewer tokens — and the gap *widens* with corpus size (crawl scales with the whole tree, index-first with the map, search with the query). Run it yourself: `python3 bench/bench.py`.
+
 ## What's in here
 
 ```
@@ -25,11 +35,15 @@ plainspace/
 ├── SKILL.md                       # The format spec + the protocol an agent follows.
 ├── MEMORY.md                      # Optional profile: long-term memory (capture→consolidate→recall→forget).
 ├── SETUP.md                       # One-time, agent-executable setup (optional harness hooks). Ask-first.
+├── PATTERNS.md                    # Optional conventions (stage-state offload). Not required.
 ├── BOOTSTRAP.md                   # Drop-in bootstrap to point any agent at a workspace.
-├── LICENSE                        # MIT.
-├── README.md
+├── CHANGELOG.md  CONTRIBUTING.md  LICENSE
 ├── tools/
-│   └── psindex.py                 # Optional derived index (SQLite FTS), stdlib only.
+│   ├── psindex.py                 # rung 2: SQLite FTS index, stdlib only (build/search/map/stats/check).
+│   ├── pssearch3.py               # rung 3: hybrid BM25+embeddings, optional backend, falls back to FTS.
+│   └── test_psindex.py            # stdlib unittest suite.
+├── bench/                         # reproducible token benchmark.
+├── design/scoring.md              # design note (proposal): per-fact scoring with decay.
 └── examples/
     ├── sample-workspace/          # A complete, generic worked example.
     │   ├── index.md               #   the map — read first

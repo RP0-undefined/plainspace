@@ -8,8 +8,8 @@ or otherwise — `AGENTS.md` is the cross-tool standard). This file is about
 
 **Plainspace** — a plain-text format that gives an AI agent durable knowledge and
 multi-step workflows as a folder of markdown files. Conventions only: no
-framework, no schema registry, no required tooling. Status: **v0.1, complete,
-ready to publish.**
+framework, no schema registry, no required tooling. Status: **v0.2, published**
+(memory profile hardened; see `CHANGELOG.md`).
 
 It is a synthesis of three ideas:
 - **OKF** (Open Knowledge Format, Google Cloud) — knowledge as markdown + YAML frontmatter.
@@ -27,21 +27,22 @@ plainspace/
 ├── SKILL.md         # THE SPEC. The format + the protocol an agent follows. Self-demonstrating (dense).
 ├── MEMORY.md        # PROFILE: long-term memory (capture→consolidate→recall→forget). Optional, layered on core.
 ├── SETUP.md         # One-time agent-executable setup: self-configure harness hooks (ask-first, never hot-path)
+├── PATTERNS.md      # Optional conventions (stage-state offload). Not required for conformance.
 ├── BOOTSTRAP.md     # Paste-into-system-prompt snippet so any agent can read/write a workspace
 ├── AGENTS.md        # This handoff (dev context, agent-neutral name)
-├── LICENSE          # MIT © 2026 Dorunaitsu
-├── tools/psindex.py # Optional derived index: SQLite+FTS5, stdlib only (build / search / map)
+├── CHANGELOG.md  CONTRIBUTING.md  LICENSE   # v0.2; contribution bar; MIT © 2026 Dorunaitsu
+├── tools/
+│   ├── psindex.py       # rung 2: SQLite+FTS5 index, STDLIB ONLY (build/search/map/stats/check)
+│   ├── pssearch3.py     # rung 3: hybrid BM25+embeddings (RRF); stdlib, optional /v1/embeddings backend
+│   └── test_psindex.py  # stdlib unittest suite (run: python3 tools/test_psindex.py)
+├── bench/           # reproducible token benchmark (naive vs index-first vs FTS)
+├── design/scoring.md  # design note (proposal, not implemented): per-fact scoring with decay
+├── .github/workflows/ci.yml  # tests + conformance on examples
 └── examples/
     ├── sample-workspace/   # Complete generic worked example (collect -> draft pipeline + knowledge base)
-    │   ├── index.md  log.md
-    │   ├── knowledge/{style-guide.md (audience: both), glossary.md (audience: agent)}
-    │   ├── 01_collect/{_stage.md, output/.gitkeep}
-    │   └── 02_draft/{_stage.md, output/.gitkeep}
-    └── memory-workspace/   # Worked example of the Memory profile
-        ├── index.md ("# Core" always-loaded block)  log.md
-        ├── inbox/ (cheap capture)  knowledge/ (status/source/confidence/supersedes)
-        ├── archive/ (superseded — excluded from recall)
-        └── 90_consolidate/_stage.md (recurring maintenance stage)
+    └── memory-workspace/   # Memory profile: # Core (per-line links) + generated maps, inbox/,
+        #                     knowledge/ (derived_from/source/status), archive/inbox/ (promoted_to),
+        #                     90_consolidate/_stage.md (triggers: frontmatter)
 ```
 
 ## Design decisions — do not silently undo these
@@ -78,6 +79,21 @@ plainspace/
    archive by default. (e) Maintenance stages (90+) may write across the
    workspace, unlike regular stages. (f) `tools/psindex.py` stays stdlib-only and
    optional — the profile must work with zero tooling at small scale.
+8. **Memory v0.2 laws (added; do not undo).** (g) Unbroken traceability: consolidated
+   captures are archived (`archive/inbox/` + `promoted_to`), never deleted; promoted
+   knowledge carries `derived_from`. An agent can drill L3→L0 by frontmatter alone.
+   (h) `# Core` is a generated layer with a ≤15-line budget and per-line links — it is
+   the only always-loaded file, so it must be the most disciplined. (i) Recall is
+   deterministic and budgeted (≤5, open one, degrade gracefully); usage telemetry (if
+   ever added, see `design/scoring.md`) lives ONLY in the disposable db, never in files.
+   (j) `pssearch3.py` (rung 3) is a substrate swap behind the same verb; without an
+   embeddings backend it falls back to FTS. Deleting the db and rebuilding must reproduce
+   results.
+9. **Rejected from TencentDB-Agent-Memory (source of the v0.2 review).** Borrowed its
+   *concepts* (pyramid, traceability, budgets, hybrid recall), never its storage model:
+   NO database as source of truth for lower layers; NO gateway/HTTP service, plugin, auth,
+   or Docker; NO required embeddings or non-stdlib dependency in the core path; captures
+   stay markdown, not a JSONL atom store.
 
 ## Editing conventions
 
@@ -94,11 +110,11 @@ plainspace/
 - [x] Local git repo initialized and committed (`Plainspace v0.1`).
 - [x] **Published:** https://github.com/RP0-undefined/plainspace (public, `main`).
 - [x] **Memory profile** (`MEMORY.md`) + `tools/psindex.py` + `examples/memory-workspace/`.
-- [ ] Optional backlog: a tiny no-dependency conformance checker script;
-      `CONTRIBUTING.md`; a one-line spec-version bump policy; rung-3 semantic
-      recall reference implementation (embeddings behind the same search verbs);
-      propose Plainspace as an optional skill to NousResearch/hermes-agent
-      (issue-first — draft written, owner action);
-      per-fact scoring with decay — a memory whose score drops below a threshold
-      enters an audit queue for the consolidation stage (owner-approved
-      direction, not designed yet).
+- [x] **Memory v0.2** (2026-07-06): traceability, named pyramid, Core lifecycle+budget,
+      warmup/declared triggers, recall budgets, dedup, `psindex check`, tests + CI,
+      `bench/`, `CHANGELOG.md`, `CONTRIBUTING.md`, spec-version policy, rung-3
+      `pssearch3.py`, `PATTERNS.md`. Spec bumped v0.1 → v0.2.
+- [ ] Optional backlog: implement `design/scoring.md` after resolving its open questions
+      (owner approval); propose Plainspace as an optional skill to
+      NousResearch/hermes-agent (issue-first — draft written, owner action);
+      second non-memory example (research-to-brief pipeline).

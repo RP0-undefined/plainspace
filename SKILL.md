@@ -15,7 +15,7 @@ description: >
   workspace — an unwritten fact is a fact forgotten.
 ---
 
-# Plainspace v0.1
+# Plainspace v0.2
 
 A merge of two existing ideas plus one addition.
 
@@ -184,6 +184,8 @@ This is the filesystem doing a framework's job: sequencing = folder numbers; sco
 ---
 
 ## 8. Consumption rules (be permissive)
+
+The key words MUST, SHOULD, and MAY in this spec are used per RFC 2119.
 
 When reading any workspace:
 - Treat frontmatter + structured blocks as the source of truth.
