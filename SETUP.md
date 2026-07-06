@@ -69,10 +69,12 @@ Consolidation only exists if something triggers it. Pick ONE, with the human's a
 |------------------------------------|--------|
 | harness has scheduled/cron agents  | schedule a daily/weekly run: "Run `90_consolidate/_stage.md` per its contract" |
 | harness supports subagents         | delegate the consolidation run to a dedicated subagent — its `_stage.md` is the complete prompt. Do NOT delegate capture or targeted recall: they belong to the calling agent (delegation there adds cost, no benefit) |
+| harness has a session-end hook     | on session end, run `psindex.py stats`; if the inbox line shows `<- CONSOLIDATE`, trigger a consolidation run (the harness idle-timeout equivalent) |
 | OS scheduler available (cron, Task Scheduler) | e.g. `0 7 * * * cd /path/to/workspace && <agent-cli> -p "Run 90_consolidate/_stage.md per its contract"` |
-| neither                            | fallback rule, add to your always-loaded instructions: "At session start, if `inbox/` has ≥ 10 files or its oldest capture is > 7 days old, run the consolidation stage before other work." |
+| neither                            | fallback rule, add to your always-loaded instructions: "At session start, run `psindex.py stats`; if it flags `<- CONSOLIDATE`, run the consolidation stage before other work." |
 
-The fallback is weaker (advisory, like all instructions) — prefer a real scheduler.
+Thresholds are declared on the stage (`triggers:` frontmatter) and read by `psindex.py stats`
+— don't hardcode 10/7 in the hook. The fallback is weaker (advisory) — prefer a real scheduler.
 
 ---
 

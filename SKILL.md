@@ -177,7 +177,7 @@ This is the filesystem doing a framework's job: sequencing = folder numbers; sco
 
 ## 7. Cross-links & citations
 
-- Link concept→concept with markdown links. Bundle-relative (leading `/`) is preferred: `[suppliers](/knowledge/kavrosa-suppliers.md)`.
+- Link concept→concept with **plain relative** markdown links: `[suppliers](../knowledge/kavrosa-suppliers.md)`. These resolve in GitHub and every renderer even when the workspace is a subfolder of a larger repo. (Leading-`/` bundle-relative links are tolerated on read, but avoid writing them — they break outside the workspace root.)
 - A link asserts a relationship; its *kind* is conveyed by the surrounding line, not the link. Consumers MUST tolerate broken links (target may be not-yet-written knowledge).
 - Sources backing a claim go under a trailing `# Citations` list, numbered. Keep them in `# Notes` if they are human-only.
 

@@ -1,13 +1,14 @@
 # Core
-<!-- always load this block: it is the in-context memory -->
-* Domain: example SaaS product ("Vantail"), B2B, small team.
-* Active focus: enterprise deals — SSO and data residency keep coming up.
+<!-- always-loaded distilled memory (L3). Each line links to the concept it distills. Budget: <=15 lines. -->
+* B2B SaaS "Vantail", small team; current focus = enterprise deals.
+* SSO sold on Business but still roadmap — never promise a date. See [pricing](knowledge/pricing.md).
+* Main onboarding drop-off is invite→project. See [onboarding funnel](knowledge/onboarding-funnel.md).
 
-# Knowledge
-* [Pricing](knowledge/pricing.md) — current plans and limits
-* [Onboarding funnel](knowledge/onboarding-funnel.md) — current funnel + drop-off facts
+<!-- generated: psindex map -->
+# Workspace — map
 
-# Memory system
-* [inbox](inbox/) — raw captures awaiting consolidation
-* [90 consolidate](90_consolidate/_stage.md) — promote inbox → knowledge, archive stale
-* [archive](archive/) — superseded facts, excluded from recall
+## Subdirectories
+* [90_consolidate/](90_consolidate/index.md)
+* [archive/](archive/index.md)
+* [inbox/](inbox/index.md)
+* [knowledge/](knowledge/index.md)

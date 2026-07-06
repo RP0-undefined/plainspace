@@ -40,12 +40,15 @@ steps). Follow this protocol.
    End-of-task checkpoint: before finishing ANY task, if you learned a durable
    fact (decision, constraint, preference, outcome), capture it — do not wait
    to be asked. An unwritten fact is a fact forgotten.
-2. Before trusting a fact, check its `status`: skip `superseded`/`archived`.
+2. Before trusting a fact, check its `status`: skip `superseded`/`archived`/`consolidated`.
    Never search `archive/` unless auditing.
 3. Recall ladder: `index.md` maps → grep or `tools/psindex.py search "query"` →
-   semantic index if present. Climb only when the rung below fails.
-4. Consolidation (promote inbox → knowledge, archive stale) runs as the `90_*`
-   stage per its own contract — do not consolidate ad hoc.
+   semantic index if present. Climb only when the rung below fails; take ≤5
+   candidates, open the ONE you need. If search fails or is slow, drop a rung and
+   continue — recall must never block the task.
+4. Consolidation (promote inbox → knowledge, archive consumed captures with
+   `promoted_to`, never delete) runs as the `90_*` stage per its own contract —
+   do not consolidate ad hoc.
 
 **The one rule behind all of this:** the expensive thing is loading context you
 don't need, not verbose prose. Load less first. Compress prose last, and never
