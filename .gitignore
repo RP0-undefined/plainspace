@@ -4,3 +4,6 @@
 # Build artifacts
 *.zip
 memory.db
+
+# Local planning — never published
+todo/

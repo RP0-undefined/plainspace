@@ -114,6 +114,11 @@ plainspace/
       warmup/declared triggers, recall budgets, dedup, `psindex check`, tests + CI,
       `bench/`, `CHANGELOG.md`, `CONTRIBUTING.md`, spec-version policy, rung-3
       `pssearch3.py`, `PATTERNS.md`. Spec bumped v0.1 → v0.2.
+- [x] **v0.2.1** (2026-07-07): bug 4 fix (`stats` falsy-zero) + regression test;
+      MEMORY.md §5d "mailbox rule" clarification.
+- [ ] **Phase 9 — auto-capture** (spec ready in `todo/auto-capture-spec.md`): harness-agnostic
+      out-of-band extractor (transcript + watermark → `inbox/`), shaped as an optional
+      `89_extract` stage; per-harness adapters. Not yet implemented.
 - [ ] Optional backlog: implement `design/scoring.md` after resolving its open questions
       (owner approval); propose Plainspace as an optional skill to
       NousResearch/hermes-agent (issue-first — draft written, owner action);

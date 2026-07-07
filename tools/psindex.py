@@ -271,7 +271,10 @@ def stats(root):
 
     know = [(p, rel, m) for p, rel, m in rows if rel.parts[0] == "knowledge"]
     inbox = [(p, rel, m) for p, rel, m in rows if rel.parts[0] == "inbox"]
-    stale = [rel for _, rel, m in know if (_days_ago(m.get("last_verified")) or 10**6) > 180]
+    # missing last_verified -> flag; verified today -> days_ago is 0, NOT stale
+    # (do not use `... or 10**6`: 0 is falsy and would misflag today's facts).
+    stale = [rel for _, rel, m in know
+             if (d := _days_ago(m.get("last_verified"))) is None or d > 180]
     no_prov = [rel for _, rel, m in know if not m.get("derived_from") and not m.get("source")]
 
     print(f"concepts: {len(rows)} ("

@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from contextlib import redirect_stdout
+from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -108,6 +109,16 @@ class Workspace(unittest.TestCase):
         r = out(psindex.stats, self.root)
         self.assertIn("inbox backlog: 1", r)
         self.assertIn("lacking provenance", r)
+
+    def test_stats_today_not_stale(self):
+        # regression (bug 4): last_verified = today (days_ago == 0) must NOT be
+        # counted stale — 0 is falsy, the old `... or 10**6` misflagged it.
+        write(self.root, "knowledge/fresh.md",
+              {"type": "Reference", "title": "Fresh", "source": "x",
+               "last_verified": date.today().isoformat()}, "recent fact")
+        r = out(psindex.stats, self.root)
+        # with the bug fresh.md appears in the stale list; with the fix it never does.
+        self.assertNotIn("knowledge/fresh.md", r)
 
     def test_check_detects_broken_chain(self):
         write(self.root, "knowledge/bad.md",

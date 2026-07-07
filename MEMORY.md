@@ -117,12 +117,18 @@ consolidation owns it:
 - **Every Core line MUST link to the concept it distills** (drill-down, §1).
 - **Budget: ≤ ~15 lines / one screen.** Core is the only always-loaded file — it must be the most token-disciplined thing in the workspace. Over budget → push detail down into `knowledge/`, keep only the pointer in Core.
 
-### 5d. Boundary — one writer
-One workspace = one writing agent at a time. This profile has no locking; concurrent
-writers corrupt consolidation. Multiple agents need separate workspaces, or all writes
-serialized through the one agent that runs consolidation. Consolidation MAY run as a
-dedicated subagent (its `_stage.md` is the complete prompt); capture and targeted recall
-stay with the calling agent.
+### 5d. Boundary — the mailbox rule
+Exclusive (single-writer) access is required only for **consolidation itself and any
+mutation of `knowledge/`, `archive/`, `index.md`, or `log.md`** — those have no locking and
+concurrent writers corrupt them. Multiple agents need separate workspaces, or serialize
+those writes through the one agent that runs consolidation. Consolidation MAY run as a
+dedicated subagent (its `_stage.md` is the complete prompt).
+
+**`inbox/` is a mailbox: appending a new, uniquely-named capture is always lock-free-safe
+from any session** — nothing is edited in place; worst case the capture waits for the next
+run. So capture never needs the writer lock; only consolidation does. One documented side
+effect: a capture written *mid-run* may be swept into the consolidation's final
+`git add -A` commit (minor audit-trail attribution blur) — acceptable.
 
 Profile extension to core §6: **maintenance stages (numbered 90+) MAY write across the
 workspace** instead of only `output/`. Numbering convention: 90+ = recurring maintenance.

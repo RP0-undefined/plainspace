@@ -4,6 +4,18 @@ Versioning: the spec version lives in the `SKILL.md` title. **Additive** change 
 optional field, profile, tool subcommand) → minor bump. **Breaking** change (a conformant
 workspace stops being conformant, or a documented default changes meaning) → major bump.
 
+## v0.2.1 — 2026-07-07
+
+Patch, surfaced by real production use of the memory profile.
+
+- **Fix (bug 4)**: `psindex.py stats` used `(_days_ago(last_verified) or 10**6) > 180`, so a
+  concept verified *today* (`days_ago == 0`, falsy) was misreported as maximally stale. Now
+  `(d := _days_ago(...)) is None or d > 180` — missing still flags, today no longer does.
+  Regression test added (`test_stats_today_not_stale`).
+- **Spec clarification (MEMORY.md §5d, "mailbox rule")**: single-writer exclusivity applies
+  only to consolidation and to `knowledge/`/`archive/`/`index.md`/`log.md` mutations;
+  appending a uniquely-named capture to `inbox/` is always lock-free-safe from any session.
+
 ## v0.2 — 2026-07-06
 
 Memory profile hardening (see `MEMORY.md`), no breaking changes to the core spec.
