@@ -114,7 +114,7 @@ valuable, and most neglected, at the start.
   - Contradiction → newer wins unless its `confidence` is lower. Loser → `archive/` with `status: superseded` + `superseded_by`. Move history, never rewrite it.
   - Ambiguous → leave in `inbox/`, flag in `log.md` for a human.
 - **Archive captures, don't delete** (§4a): each consolidated capture → `archive/inbox/<file>` with `status: consolidated` + `promoted_to: <knowledge path(s)>`. The raw evidence behind every promoted fact survives.
-- **Demote**: knowledge unreferenced and `last_verified` > 180 days → `archive/`, `status: archived`.
+- **Demote**: knowledge unreferenced and `last_verified` > 180 days → `archive/`, `status: archived`. "Unreferenced" is now computable — `psindex.py stats` reports **demotion candidates** (0 inbound links + provably >180d) and **orphans** (no links in or out; link-or-archive them). Inbound counts come from a link graph over markdown links + `supersedes`/`derived_from`/`promoted_to` + the `# Core` block (generated maps excluded). `psindex.py links <path>` answers "what references this?".
 - **Core refresh** (§5c).
 - **Reindex**: regenerate maps (`psindex.py map`); rebuild `memory.db` if used. Append a run summary to `log.md` with counters: promoted / merged / superseded / archived / left-ambiguous (`psindex.py stats`).
 - **Post-commit** (if git repo): `git add -A && git commit -m "memory: consolidate <date> — <counters>"`. The diff against pre-consolidate is the human review gate.

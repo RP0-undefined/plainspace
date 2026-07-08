@@ -11,6 +11,7 @@ freely). Stdlib only. FTS5 when available, LIKE fallback otherwise.
   psindex.py stats  [workspace]                          memory hygiene counters
   psindex.py check  [workspace]                          conformance check (CI exit code)
   psindex.py watermark [workspace]                        advance auto-capture watermark (Phase 9)
+  psindex.py links  PATH [--dir WS]                       who references PATH / what it references
 
 The db auto-rebuilds when any indexed file is newer than it, or the file count
 changed — so "files win" is enforced, not just stated.
@@ -33,6 +34,8 @@ MARKER = "<!-- generated: psindex map -->"
 DEFAULT_TRIGGERS = {"inbox_files": 10, "oldest_days": 7}
 FIELDS = ("type", "title", "description", "audience", "status", "tags",
           "updated", "source", "last_verified", "derived_from")
+LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
+REL_FIELDS = ("supersedes", "superseded_by", "derived_from", "promoted_to")
 
 
 def parse_frontmatter(text):
@@ -74,6 +77,70 @@ def iter_concepts(root):
         yield p, rel
 
 
+# --- link graph (Phase 10): relationships are first-class -----------------------
+# Edges: concept body markdown links + frontmatter relations (supersedes/derived_from/
+# promoted_to/superseded_by) + the root index.md `# Core` block. Generated maps are
+# excluded (they mechanically link everything). Powers demotion + orphan detection.
+
+def _resolve_link(src_rel, target):
+    """Resolve a link target to a workspace-relative .md path, or None."""
+    target = target.split("#")[0].strip()
+    if not target or "://" in target or target.startswith(("mailto:", "#")):
+        return None
+    p = target.lstrip("/") if target.startswith("/") \
+        else os.path.normpath(str(src_rel.parent / target))
+    return p if p.endswith(".md") else None
+
+
+def _concept_edges(rel, meta, body):
+    """(dst, kind) edges out of one concept. Body links resolve relative to the
+    concept's dir; frontmatter relation paths are workspace-relative."""
+    out = []
+    for m in LINK_RE.finditer(body):
+        dst = _resolve_link(rel, m.group(1))
+        if dst:
+            out.append((dst, "link"))
+    for field in REL_FIELDS:
+        for t in (x.strip() for x in (meta.get(field) or "").split(",") if x.strip()):
+            dst = os.path.normpath(t.lstrip("/"))
+            if dst.endswith(".md"):
+                out.append((dst, field))
+    return out
+
+
+def collect_edges(root):
+    """All (src, dst, kind) edges + the set of concept paths. src='index.md' for Core."""
+    edges, concepts = [], set()
+    items = []
+    for p, rel in iter_concepts(root):
+        meta, body = parse_frontmatter(p.read_text(errors="replace"))
+        concepts.add(str(rel))
+        items.append((rel, meta, body))
+    for rel, meta, body in items:
+        edges += [(str(rel), dst, kind) for dst, kind in _concept_edges(rel, meta, body)]
+    idx = root / "index.md"                       # Core block only (above the map marker)
+    if idx.exists():
+        core = idx.read_text(errors="replace").split(MARKER)[0]
+        for m in LINK_RE.finditer(core):
+            dst = _resolve_link(Path("index.md"), m.group(1))
+            if dst:
+                edges.append(("index.md", dst, "core"))
+    return edges, concepts
+
+
+def link_metrics(root):
+    """(inbound, outbound) maps over existing concepts (broken links excluded)."""
+    edges, concepts = collect_edges(root)
+    inbound = {c: set() for c in concepts}
+    outbound = {c: set() for c in concepts}
+    for src, dst, _ in edges:
+        if dst in concepts:
+            inbound[dst].add(src)
+            if src in concepts:
+                outbound[src].add(dst)
+    return inbound, outbound
+
+
 def build(root):
     db_path = root / DB_NAME
     db = sqlite3.connect(db_path)
@@ -104,6 +171,10 @@ def build(root):
                  meta.get("tags", ""), body),
             )
         n += 1
+    db.executescript("DROP TABLE IF EXISTS links;"
+                     "CREATE TABLE links(src TEXT, dst TEXT, kind TEXT);")
+    edges, _ = collect_edges(root)
+    db.executemany("INSERT INTO links VALUES(?,?,?)", edges)
     db.commit()
     db.close()
     note = "" if fts else " (FTS5 unavailable: search will use LIKE fallback)"
@@ -353,6 +424,13 @@ def stats(root):
     stale = [rel for _, rel, m in know
              if (d := _days_ago(m.get("last_verified"))) is None or d > 180]
     no_prov = [rel for _, rel, m in know if not m.get("derived_from") and not m.get("source")]
+    inbound, outbound = link_metrics(root)
+    # demotion candidate = unreferenced AND provably stale (last_verified present, >180d)
+    demotion = [rel for _, rel, m in know
+                if not inbound.get(str(rel))
+                and (d := _days_ago(m.get("last_verified"))) is not None and d > 180]
+    orphans = [rel for _, rel, m in know
+               if not inbound.get(str(rel)) and not outbound.get(str(rel))]
 
     print(f"concepts: {len(rows)} ("
           + ", ".join(f"{k} {v}" for k, v in sorted(by_top.items())) + ")")
@@ -376,6 +454,35 @@ def stats(root):
           + (" -> " + ", ".join(str(r) for r in stale[:5]) if stale else ""))
     print(f"knowledge lacking provenance (no derived_from/source): {len(no_prov)}"
           + (" -> " + ", ".join(str(r) for r in no_prov[:5]) if no_prov else ""))
+    print(f"demotion candidates (unreferenced + >180d): {len(demotion)}"
+          + (" -> " + ", ".join(str(r) for r in demotion[:5]) if demotion else ""))
+    print(f"orphans (no links in/out): {len(orphans)}"
+          + (" -> " + ", ".join(str(r) for r in orphans[:5]) if orphans else ""))
+
+
+def links_cmd(root, target):
+    """Print what references `target` (inbound) and what it references (outbound)."""
+    db_path = root / DB_NAME
+    if is_stale(root) or not db_path.exists():
+        build(root)
+    db = sqlite3.connect(db_path)
+    if not db.execute("SELECT 1 FROM sqlite_master WHERE name='links'").fetchone():
+        db.close()
+        build(root)                                # db predates the links table
+        db = sqlite3.connect(db_path)
+    existing = {r[0] for r in db.execute("SELECT path FROM files").fetchall()}
+    inb = db.execute("SELECT src, kind FROM links WHERE dst=? ORDER BY kind, src",
+                     (target,)).fetchall()
+    outb = db.execute("SELECT dst, kind FROM links WHERE src=? ORDER BY kind, dst",
+                      (target,)).fetchall()
+    db.close()
+    print(f"inbound ({len(inb)}) — what references {target}:")
+    for src, kind in inb:
+        print(f"  <- {src} [{kind}]")
+    print(f"outbound ({len(outb)}) — what {target} references:")
+    for dst, kind in outb:
+        broken = "" if (dst in existing or dst == "index.md") else "  (broken)"
+        print(f"  -> {dst} [{kind}]{broken}")
 
 
 def check(root):
@@ -417,6 +524,7 @@ def main():
     ws(sub.add_parser("stats"))
     ws(sub.add_parser("check"))
     ws(sub.add_parser("watermark"))
+    p_l = sub.add_parser("links"); p_l.add_argument("path"); p_l.add_argument("--dir", default=".")
     p_s = sub.add_parser("search")
     p_s.add_argument("query", nargs="+")
     p_s.add_argument("--dir", default=".")
@@ -435,6 +543,8 @@ def main():
         sys.exit(1 if check(Path(a.workspace).resolve()) else 0)
     elif a.cmd == "watermark":
         advance_watermark(Path(a.workspace).resolve())
+    elif a.cmd == "links":
+        links_cmd(Path(a.dir).resolve(), a.path)
     elif a.cmd == "search":
         search(Path(a.dir).resolve(), " ".join(a.query),
                show_all=a.all, limit=a.limit, since=a.since)

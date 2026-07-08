@@ -118,7 +118,9 @@ class Workspace(unittest.TestCase):
                "last_verified": date.today().isoformat()}, "recent fact")
         r = out(psindex.stats, self.root)
         # with the bug fresh.md appears in the stale list; with the fix it never does.
-        self.assertNotIn("knowledge/fresh.md", r)
+        # (scope to the stale line — fresh.md legitimately shows on the orphans line.)
+        stale_line = next(l for l in r.splitlines() if l.startswith("knowledge unverified"))
+        self.assertNotIn("fresh.md", stale_line)
 
     def test_check_detects_broken_chain(self):
         write(self.root, "knowledge/bad.md",
@@ -134,6 +136,27 @@ class Workspace(unittest.TestCase):
         with redirect_stdout(io.StringIO()):
             problems = psindex.check(self.root)
         self.assertTrue(any("notype.md" in p and "type" in p for p in problems))
+
+    def test_link_graph_and_orphans(self):
+        # a body link + a frontmatter relation both become queryable edges
+        write(self.root, "knowledge/a.md",
+              {"type": "Reference", "title": "A", "source": "x",
+               "derived_from": "archive/old.md"},
+              "see [B](b.md) for more")
+        write(self.root, "knowledge/b.md",
+              {"type": "Reference", "title": "B", "source": "x"}, "leaf")
+        r = out(psindex.links_cmd, self.root, "knowledge/b.md")
+        self.assertIn("<- knowledge/a.md [link]", r)          # inbound body link
+        r = out(psindex.links_cmd, self.root, "archive/old.md")
+        self.assertIn("<- knowledge/a.md [derived_from]", r)  # inbound relation
+        # lonely.md: nothing points to it and it points nowhere -> orphan.
+        # b.md has an inbound link (from a) -> NOT an orphan.
+        write(self.root, "knowledge/lonely.md",
+              {"type": "Reference", "title": "Lonely", "source": "x"}, "isolated note")
+        r = out(psindex.stats, self.root)
+        orphan_line = next(l for l in r.splitlines() if l.startswith("orphans"))
+        self.assertIn("knowledge/lonely.md", orphan_line)
+        self.assertNotIn("knowledge/b.md", orphan_line)
 
     def test_extract_backlog_and_watermark(self):
         write(self.root, "89_extract/_stage.md",

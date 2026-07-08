@@ -4,6 +4,20 @@ Versioning: the spec version lives in the `SKILL.md` title. **Additive** change 
 optional field, profile, tool subcommand) → minor bump. **Breaking** change (a conformant
 workspace stops being conformant, or a documented default changes meaning) → major bump.
 
+## v0.3.1 — 2026-07-08
+
+Link graph (Phase 10.1/10.3, from the DeusData/codebase-memory-mcp review) — additive
+tooling; core spec unchanged. The MCP adapter (10.2) was declined (out of scope: Plainspace
+is conventions, not a runtime).
+
+- **Queryable link graph** in `memory.db` (`links` table): markdown links + frontmatter
+  relations (`supersedes`/`derived_from`/`promoted_to`/`superseded_by`) + the `# Core`
+  block; generated maps excluded. Stdlib only.
+- **`psindex.py links <path>`**: "what references this / what does it reference", by kind,
+  flagging broken targets.
+- **`stats`** gains **demotion candidates** (unreferenced + provably >180d — finally
+  operationalizes MEMORY §5's demotion rule) and **orphans** (no links in or out).
+
 ## v0.3 — 2026-07-08
 
 Auto-capture (memory profile, Phase 9) — additive, no breaking changes.

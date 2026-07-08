@@ -130,6 +130,10 @@ plainspace/
       extractor is an agent run driven by its contract, not a script); watermark over a
       harness transcript source; `psindex.py stats` `<- EXTRACT` flag + `watermark`
       subcommand (stdlib); MEMORY.md §4b, SETUP.md §3/§3b adapter table, worked example.
+- [x] **v0.3.1 — Phase 10.1/10.3 link graph** (2026-07-08): `links` table in the db,
+      `psindex.py links <path>`, `stats` demotion-candidate + orphan counters
+      (operationalizes the demotion rule). Phase 10.2 (MCP adapter) DECLINED — out of scope
+      (conventions, not a runtime).
 - [ ] Optional backlog: implement `design/scoring.md` after resolving its open questions
       (owner approval); propose Plainspace as an optional skill to
       NousResearch/hermes-agent (issue-first — draft written, owner action);
