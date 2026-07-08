@@ -135,6 +135,22 @@ class Workspace(unittest.TestCase):
             problems = psindex.check(self.root)
         self.assertTrue(any("notype.md" in p and "type" in p for p in problems))
 
+    def test_extract_backlog_and_watermark(self):
+        write(self.root, "89_extract/_stage.md",
+              {"type": "Stage", "title": "Extract",
+               "source_glob": ".capture_log/*.jsonl",
+               "triggers": "{extract_turns: 2}"}, "process")
+        log = self.root / ".capture_log" / "s.jsonl"
+        log.parent.mkdir(parents=True, exist_ok=True)
+        log.write_text('{"turn":1}\n{"turn":2}\n{"turn":3}\n')  # 3 pending
+        r = out(psindex.stats, self.root)
+        self.assertIn("extract backlog: 3 pending", r)
+        self.assertIn("<- EXTRACT", r)                 # 3 >= threshold 2
+        out(psindex.advance_watermark, self.root)
+        r = out(psindex.stats, self.root)
+        self.assertIn("extract backlog: 0 pending", r)
+        self.assertNotIn("<- EXTRACT", r)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

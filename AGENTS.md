@@ -94,6 +94,16 @@ plainspace/
    NO database as source of truth for lower layers; NO gateway/HTTP service, plugin, auth,
    or Docker; NO required embeddings or non-stdlib dependency in the core path; captures
    stay markdown, not a JSONL atom store.
+10. **Auto-capture laws (v0.3 Phase 9, do not undo).** (a) Extraction is OUT-OF-BAND only
+    (scheduler/session-end) — never mid-conversation (no latency/cost/context pollution).
+    (b) State is a **watermark, not a counter** — pending is derived (lines since watermark);
+    idempotent, crash-safe (write captures → advance watermark). (c) The extractor writes
+    `inbox/` ONLY (mailbox-safe); it never touches `knowledge/` and never consolidates.
+    (d) Auto facts default `confidence: medium` (deliberate captures may claim `high`);
+    hard secrets guard (never extract credentials); batch cap ≤~20. (e) Never delete a
+    harness-native transcript store; only adapter-owned logs, only past the watermark.
+    (f) The extractor is an agent run driven by `89_extract/_stage.md` — NOT a script;
+    `psindex.py` only reads the watermark (`stats`) and advances it (`watermark`).
 
 ## Editing conventions
 
@@ -116,9 +126,10 @@ plainspace/
       `pssearch3.py`, `PATTERNS.md`. Spec bumped v0.1 → v0.2.
 - [x] **v0.2.1** (2026-07-07): bug 4 fix (`stats` falsy-zero) + regression test;
       MEMORY.md §5d "mailbox rule" clarification.
-- [ ] **Phase 9 — auto-capture** (spec ready in `todo/auto-capture-spec.md`): harness-agnostic
-      out-of-band extractor (transcript + watermark → `inbox/`), shaped as an optional
-      `89_extract` stage; per-harness adapters. Not yet implemented.
+- [x] **v0.3 — Phase 9 auto-capture** (2026-07-08): optional `89_extract` stage (the
+      extractor is an agent run driven by its contract, not a script); watermark over a
+      harness transcript source; `psindex.py stats` `<- EXTRACT` flag + `watermark`
+      subcommand (stdlib); MEMORY.md §4b, SETUP.md §3/§3b adapter table, worked example.
 - [ ] Optional backlog: implement `design/scoring.md` after resolving its open questions
       (owner approval); propose Plainspace as an optional skill to
       NousResearch/hermes-agent (issue-first — draft written, owner action);

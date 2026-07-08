@@ -15,7 +15,7 @@ description: >
   workspace — an unwritten fact is a fact forgotten.
 ---
 
-# Plainspace v0.2
+# Plainspace v0.3
 
 A merge of two existing ideas plus one addition.
 

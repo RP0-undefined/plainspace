@@ -64,20 +64,35 @@ schema in its docs before writing — schemas change.
 
 ---
 
-## 3. Schedule consolidation (the memory's heartbeat)
+## 3. Schedule the heartbeat (consolidation, + auto-capture if set up)
 
-Consolidation only exists if something triggers it. Pick ONE, with the human's approval:
+The heartbeat only exists if something triggers it. If the auto-capture stage
+`89_extract/` is present (§3b below), the scheduled prompt is **"Run `89_extract/_stage.md`
+then `90_consolidate/_stage.md` per their contracts"** (extract fresh facts, then
+consolidate). Without it, just run `90_consolidate`. Pick ONE, with the human's approval:
 
 | your situation                     | action |
 |------------------------------------|--------|
-| harness has scheduled/cron agents  | schedule a daily/weekly run: "Run `90_consolidate/_stage.md` per its contract" |
-| harness supports subagents         | delegate the consolidation run to a dedicated subagent — its `_stage.md` is the complete prompt. Do NOT delegate capture or targeted recall: they belong to the calling agent (delegation there adds cost, no benefit) |
-| harness has a session-end hook     | on session end, run `psindex.py stats`; if the inbox line shows `<- CONSOLIDATE`, trigger a consolidation run (the harness idle-timeout equivalent) |
-| OS scheduler available (cron, Task Scheduler) | e.g. `0 7 * * * cd /path/to/workspace && <agent-cli> -p "Run 90_consolidate/_stage.md per its contract"` |
-| neither                            | fallback rule, add to your always-loaded instructions: "At session start, run `psindex.py stats`; if it flags `<- CONSOLIDATE`, run the consolidation stage before other work." |
+| harness has scheduled/cron agents  | schedule a daily/weekly run of the heartbeat prompt above |
+| harness supports subagents         | delegate the heartbeat run to a dedicated subagent — the `_stage.md` files are the complete prompt. Do NOT delegate capture or targeted recall: they belong to the calling agent |
+| harness has a session-end hook     | on session end, run `psindex.py stats`; if it flags `<- EXTRACT` or `<- CONSOLIDATE`, trigger the heartbeat (the idle-timeout equivalent) |
+| OS scheduler available (cron, Task Scheduler) | e.g. `0 7 * * * cd /path/to/ws && <agent-cli> -p "Run 89_extract then 90_consolidate per their contracts"` |
+| neither                            | fallback rule in your always-loaded instructions: "At session start, run `psindex.py stats`; if it flags `<- EXTRACT`/`<- CONSOLIDATE`, run the heartbeat before other work." |
 
-Thresholds are declared on the stage (`triggers:` frontmatter) and read by `psindex.py stats`
-— don't hardcode 10/7 in the hook. The fallback is weaker (advisory) — prefer a real scheduler.
+Thresholds are declared on the stages (`triggers:` frontmatter) and read by `psindex.py stats`
+— don't hardcode them in the hook. The fallback is weaker (advisory) — prefer a real scheduler.
+
+### 3b. Auto-capture adapters (optional, Phase 9)
+Auto-capture guarantees `inbox/` fills without relying on the advisory checkpoint (§1). It
+needs a transcript source; wire the one for your harness, then add `89_extract/` (see the
+worked example). The extractor is an agent run driven by `89_extract/_stage.md` — no script.
+
+| harness | transcript source (`source_glob` on `89_extract`) | note |
+|---------|----------------------------------------------------|------|
+| Claude Code | `~/.claude/projects/<project-slug>/*.jsonl` (native session logs) | **no hook needed**; never delete these — the watermark tracks progress |
+| Hermes | a `post_llm_call` plugin appends `{ts,session,user,assistant}` to `~/.capture_log/*.jsonl` | adapter-owned log; delete lines only after the watermark passes them |
+| any hook-capable | a turn-end hook appends the same JSONL | as above |
+| no hooks / no transcripts | auto-capture unavailable — the §1 advisory checkpoint is the fallback | — |
 
 Optional, if your harness exposes context-window usage: trigger the stage-state offload
 pattern (`PATTERNS.md` §1) at ~50% window and force it by ~85%. This is harness business,

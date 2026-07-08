@@ -10,12 +10,16 @@ freely). Stdlib only. FTS5 when available, LIKE fallback otherwise.
   psindex.py map    [workspace] [--force]                regenerate index.md maps
   psindex.py stats  [workspace]                          memory hygiene counters
   psindex.py check  [workspace]                          conformance check (CI exit code)
+  psindex.py watermark [workspace]                        advance auto-capture watermark (Phase 9)
 
 The db auto-rebuilds when any indexed file is newer than it, or the file count
 changed — so "files win" is enforced, not just stated.
 """
 
 import argparse
+import glob as globmod
+import json
+import os
 import re
 import sqlite3
 import sys
@@ -255,6 +259,79 @@ def read_triggers(root):
     return trg
 
 
+# --- auto-capture (Phase 9): watermark over a harness transcript source -------
+# Config lives on an optional `89_*/_stage.md` (source_glob + triggers.extract_turns);
+# state lives in `.autocapture/watermark` (JSON: {abs_file: lines_processed}). Both
+# derived/local — no external dependency, stdlib only.
+
+def read_extract_config(root):
+    """(source_glob, extract_turns) from an 89_*/_stage.md, or (None, None)."""
+    for stage in sorted(root.glob("89_*/_stage.md")):
+        meta, _ = parse_frontmatter(stage.read_text(errors="replace"))
+        if not meta.get("source_glob"):
+            continue
+        m = re.search(r"extract_turns\s*:\s*(\d+)", meta.get("triggers", ""))
+        return meta["source_glob"], (int(m.group(1)) if m else 5)
+    return None, None
+
+
+def _watermark_path(root):
+    return root / ".autocapture" / "watermark"
+
+
+def _read_watermark(root):
+    p = _watermark_path(root)
+    if p.exists():
+        try:
+            return json.loads(p.read_text())
+        except (ValueError, OSError):
+            return {}
+    return {}
+
+
+def _resolve_sources(root, source_glob):
+    pattern = os.path.expanduser(source_glob)
+    if not os.path.isabs(pattern):
+        pattern = str(root / pattern)
+    return sorted(globmod.glob(pattern))
+
+
+def _linecount(path):
+    try:
+        with open(path, "rb") as f:
+            return sum(1 for _ in f)
+    except OSError:
+        return 0
+
+
+def extract_backlog(root):
+    """(pending_turns, threshold) from watermark vs transcript source, or None."""
+    source_glob, turns = read_extract_config(root)
+    if not source_glob:
+        return None
+    wm = _read_watermark(root)
+    pending = sum(max(0, _linecount(f) - int(wm.get(f, 0)))
+                  for f in _resolve_sources(root, source_glob))
+    return pending, turns
+
+
+def advance_watermark(root):
+    """Mark all current transcript lines processed (crash-safe: call AFTER writing captures)."""
+    source_glob, _ = read_extract_config(root)
+    if not source_glob:
+        sys.exit("no 89_*/_stage.md with source_glob; nothing to watermark")
+    wm = _read_watermark(root)
+    before = 0
+    for f in _resolve_sources(root, source_glob):
+        lc = _linecount(f)
+        before += max(0, lc - int(wm.get(f, 0)))
+        wm[f] = lc
+    p = _watermark_path(root)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(wm, sort_keys=True, indent=0) + "\n")
+    print(f"watermark advanced (was {before} pending) -> {p.relative_to(root)}")
+
+
 def stats(root):
     rows = [(p, rel, parse_frontmatter(p.read_text(errors="replace"))[0])
             for p, rel in iter_concepts(root)]
@@ -290,6 +367,11 @@ def stats(root):
               f"(trigger: {thr_files} files / {trg['oldest_days']}d){tag}")
     else:
         print("inbox backlog: 0")
+    eb = extract_backlog(root)
+    if eb is not None:
+        pending, turns = eb
+        tag = " <- EXTRACT" if pending >= turns else ""
+        print(f"extract backlog: {pending} pending turn(s) (trigger: {turns}){tag}")
     print(f"knowledge unverified >180d: {len(stale)}"
           + (" -> " + ", ".join(str(r) for r in stale[:5]) if stale else ""))
     print(f"knowledge lacking provenance (no derived_from/source): {len(no_prov)}"
@@ -334,6 +416,7 @@ def main():
     p_map = sub.add_parser("map"); ws(p_map); p_map.add_argument("--force", action="store_true")
     ws(sub.add_parser("stats"))
     ws(sub.add_parser("check"))
+    ws(sub.add_parser("watermark"))
     p_s = sub.add_parser("search")
     p_s.add_argument("query", nargs="+")
     p_s.add_argument("--dir", default=".")
@@ -350,6 +433,8 @@ def main():
         stats(Path(a.workspace).resolve())
     elif a.cmd == "check":
         sys.exit(1 if check(Path(a.workspace).resolve()) else 0)
+    elif a.cmd == "watermark":
+        advance_watermark(Path(a.workspace).resolve())
     elif a.cmd == "search":
         search(Path(a.dir).resolve(), " ".join(a.query),
                show_all=a.all, limit=a.limit, since=a.since)

@@ -4,6 +4,23 @@ Versioning: the spec version lives in the `SKILL.md` title. **Additive** change 
 optional field, profile, tool subcommand) → minor bump. **Breaking** change (a conformant
 workspace stops being conformant, or a documented default changes meaning) → major bump.
 
+## v0.3 — 2026-07-08
+
+Auto-capture (memory profile, Phase 9) — additive, no breaking changes.
+
+- **Optional `89_extract` stage**: an out-of-band extractor turns harness-transcript turns
+  into `inbox/` captures (`type: Capture`, `confidence: medium`), guaranteeing capture by
+  mechanism instead of the advisory checkpoint. The extractor is an agent run driven by the
+  stage contract — not a script. Numbered 89 so one sweep runs "89 then 90" (extract →
+  consolidate).
+- **State = a watermark, not a counter** (`.autocapture/watermark`): pending is derived
+  (transcript lines past the watermark); idempotent and crash-safe.
+- **`psindex.py`**: `stats` reads the watermark and flags `<- EXTRACT` when pending ≥
+  threshold; new `watermark` subcommand advances it (stdlib only).
+- Docs: MEMORY.md §4b, SETUP.md §3/§3b (per-harness adapter table), worked example
+  `examples/memory-workspace/89_extract/`. Guard rails: out-of-band only, secrets guard,
+  batch cap, never delete harness-native transcripts.
+
 ## v0.2.1 — 2026-07-07
 
 Patch, surfaced by real production use of the memory profile.

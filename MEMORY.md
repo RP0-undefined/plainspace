@@ -81,6 +81,21 @@ drill-down chain. Producers MAY add keys; consumers preserve unknowns.
 - Do NOT update `index.md`. Do NOT format into a concept. Do NOT deduplicate.
 - Rationale: any ceremony at capture time and the agent stops saving. `inbox/` is a buffer, not storage — consolidation empties it.
 
+### 4b. Auto-capture (optional — guaranteed capture)
+Advisory capture under-triggers: without a mechanism the agent forgets to save and `inbox/`
+stays empty. Auto-capture makes capture guaranteed by mechanism, not instruction. It
+**complements** deliberate capture (consolidation dedup absorbs the overlap), never replaces it.
+
+Shape: an optional stage **`89_extract/_stage.md`** whose contract IS the prompt — read the
+harness transcript source since a **watermark** (`.autocapture/watermark`), extract durable
+facts **out-of-band** (never mid-conversation), write `type: Capture` `confidence: medium`
+files to `inbox/`, then advance the watermark (`psindex.py watermark`). Numbered 89 so one
+scheduled sweep runs the heartbeat in order: **"run 89_extract then 90_consolidate"**.
+Guard rails: never extract secrets/credentials; auto facts default `confidence: medium`
+(only deliberate captures claim `high`); batch cap ≤~20. `psindex.py stats` reads the
+watermark and flags `<- EXTRACT` when pending turns ≥ threshold. Per-harness adapters and
+the full contract: see `SETUP.md` §3 and `examples/memory-workspace/89_extract/`.
+
 ---
 
 ## 5. Consolidate — the stage that makes it a memory

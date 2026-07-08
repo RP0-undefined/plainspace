@@ -8,6 +8,7 @@
 # Workspace — map
 
 ## Subdirectories
+* [89_extract/](89_extract/index.md)
 * [90_consolidate/](90_consolidate/index.md)
 * [archive/](archive/index.md)
 * [inbox/](inbox/index.md)
