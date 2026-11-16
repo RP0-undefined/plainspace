@@ -35,6 +35,7 @@ A harness-level hook injects the reminder mechanically. Reminder text to inject:
 | your harness              | mechanism                                    | action |
 |---------------------------|----------------------------------------------|--------|
 | Claude Code               | hooks in `.claude/settings.json`             | add the `UserPromptSubmit` hook below |
+| Codex (CLI, desktop app)  | hooks in `~/.codex/hooks.json` (or the project's `.codex/hooks.json`) | add the JSON-output `UserPromptSubmit` hook below, then trust it once (`/hooks` in the CLI, Settings > Hooks in the app) |
 | other, with hook support  | equivalent event that injects context        | inject the reminder text on each turn or on session end |
 | no hook support           | always-loaded instruction file (`AGENTS.md`, system prompt, custom instructions) | append the reminder text there |
 
@@ -50,6 +51,24 @@ Claude Code example (project `.claude/settings.json`):
   }
 }
 ```
+
+Codex example (`~/.codex/hooks.json`). Codex reads hook output that starts with `[` or `{`
+as JSON, so a plain `echo '[memory] ...'` fails there ("invalid user prompt submit JSON
+output") and the reminder is dropped. Emit Codex's JSON form instead:
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      { "hooks": [ { "type": "command",
+        "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"UserPromptSubmit\", \"additionalContext\": \"[memory] Checkpoint: before finishing, capture durable facts (decision, constraint, preference, outcome) to inbox/.\"}}'" } ] }
+    ]
+  }
+}
+```
+
+Any harness: if its hooks accept plain text, keep the text from starting with `[` or `{`,
+or use its JSON form; both work wherever JSON-looking output is parsed.
 
 Cost: ~15 tokens per turn, deterministic. Verify your harness's current hook
 schema in its docs before writing — schemas change.

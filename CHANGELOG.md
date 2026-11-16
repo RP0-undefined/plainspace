@@ -4,6 +4,16 @@ Versioning: the spec version lives in the `SKILL.md` title. **Additive** change 
 optional field, profile, tool subcommand) → minor bump. **Breaking** change (a conformant
 workspace stops being conformant, or a documented default changes meaning) → major bump.
 
+## v0.3.2 — 2026-11-16
+
+Setup fix, docs only; spec and tooling unchanged, existing workspaces and hooks unaffected.
+
+- **Codex checkpoint hook** (SETUP §1): Codex parses hook output that starts with `[` or `{`
+  as JSON, so the `echo '[memory] ...'` reminder failed there with "invalid user prompt
+  submit JSON output" and was dropped. SETUP now has a Codex row and a JSON-output example
+  (`hookSpecificOutput.additionalContext`), and a note for any harness that parses
+  JSON-looking output. The Claude Code example is unchanged (it accepts plain text).
+
 ## v0.3.1 — 2026-07-08
 
 Link graph (Phase 10.1/10.3, from the DeusData/codebase-memory-mcp review) — additive
